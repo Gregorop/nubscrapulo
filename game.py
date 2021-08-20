@@ -1,5 +1,6 @@
 import pygame as pg
-from map_manager import Map,Tile
+from map_manager import Map
+from tile import GameTile, TileInFile
 from constants import *
 
 class Game():
@@ -8,20 +9,27 @@ class Game():
         self.window = pg.display.set_mode(res,flags=pg.FULLSCREEN)
 
         self.map = Map(self.window,
-                      [Tile(pg.image.load("samples/png/loc1.png"), [0,200]),
-                        Tile(pg.image.load("samples/png/loc2.png"), [100,200])])
+                      [GameTile("sofa"),
+                        GameTile("filler1"),
+                        GameTile("bookcase"),
+                        GameTile("filler1"),
+                        GameTile("filler1")])
 
     def control(self):
         for event in pg.event.get():
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     exit()
+                if event.key == pg.K_d:
+                    self.map.move(direcrionx=1,step=1)
+                if event.key == pg.K_a:
+                    self.map.move(direcrionx=-1,step=1)
 
     def start(self):
         while True:
-            self.control()
             self.window.fill(BLACK)
-            self.map.move(direcrionx=1,step=1)
+            self.map.draw_map()
+            self.control()
             pg.display.update()
 
 if __name__ == "__main__":
