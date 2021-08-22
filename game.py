@@ -8,6 +8,7 @@ class Game:
         self.res = res
         self.window = pg.display.set_mode(res,flags=pg.FULLSCREEN)
 
+        # here will be load maps
         self.map = Map(self.window,
                       [GameTile("sofa"),
                         GameTile("filler1"),
