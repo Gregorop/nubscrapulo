@@ -1,5 +1,5 @@
 import pygame as pg
-from tile import GameTile, TileInFile,MenuTile
+from tile import GameTile, TileInFile,MenuTile,MapBuilderTile
 from constants import *
 import pickle
 import os
@@ -29,7 +29,9 @@ class TileMenu:
             self.side = 1
             self.change_rect()
             for tile in self.menuTile_to_show:
-                tile.cor[0] =  self.map_creator.w - tile_side - tile_side/2
+                tile.cor[0] = self.map_creator.w - tile_side - tile_side/2
+        for tile in self.menuTile_to_show:
+            tile.rect = pg.Rect(tile.cor[0], tile.cor[1],tile_side,tile_side) 
 
     def control(self,event):
         if event.type == pg.KEYDOWN:
@@ -39,6 +41,11 @@ class TileMenu:
                 print("here menu going down")
             if event.key == pg.K_BACKSLASH:
                 self.reside()
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                for menu_tile in self.menuTile_to_show:
+                    if menu_tile.onclick(event.pos):
+                        self.map_creator.select_tile = menu_tile.onclick(event.pos)
 
     def load_tiles(self,map_name=""):
         for name in self.tile_name_list:
@@ -48,7 +55,8 @@ class TileMenu:
             if ok_category or simple_tile:
                 
                 new_menu_tile.cor[0] = self.rect.x + tile_side/2
-                new_menu_tile.cor[1] = tile_side/2 + len(self.menuTile_to_show) * tile_side * 1.2 
+                new_menu_tile.cor[1] = tile_side/2 + len(self.menuTile_to_show) * tile_side * 1.2
+                new_menu_tile.rect = pg.Rect(new_menu_tile.cor[0], new_menu_tile.cor[1],tile_side,tile_side) 
                 self.menuTile_to_show.append(new_menu_tile)
 
     def draw(self):
@@ -63,21 +71,48 @@ class MapCreator:
         self.tiles_folder = "tiles"
         self.load_all_tiles()
         self.tiles = list()
+        self.tiles_to_save = list()
         if self.full:
             self.window = pg.display.set_mode((self.w,self.h),flags=pg.FULLSCREEN)
         else:
             self.window = pg.display.set_mode((self.w,self.h))
         self.menus = list()
+        self.select_tile = None
 
     def add_menu(self,menu):
         self.menus.append(menu)
 
-    def create_file(self):
-        with open(os.path.join("maps",self.map_name+".map"),mode="wb") as file:
-            pickle.dump(self.tiles, file)
+    def create_map_file(self):
+        if not os.path.exists(os.path.join("maps",self.map_name)):
+            os.mkdir(os.path.join("maps",self.map_name))
+
+        with open(os.path.join("maps",self.map_name,self.map_name+".map"),mode="wb") as file:
+            pickle.dump(self.tiles_to_save, file)
+
+    def load_map_file(self,map_name):
+        with open(os.path.join("maps",self.map_name,self.map_name+".map"),mode="rb") as file:
+            self.tiles_to_save = pickle.load(file)
+            for tile_to_save in self.tiles_to_save:
+                tmp = GameTile(tile_to_save.tile_file)
+                tmp.cor = tile_to_save.cor
+                self.tiles.append(tmp) 
 
     def load_all_tiles(self): 
         self.all_tile_names = list(map(lambda name:name[:-5],os.listdir(self.tiles_folder)))
+
+    def clean_space_click_check(self,pos):
+        for menu in self.menus:
+            if menu.rect.collidepoint(pos):
+                return False
+        return True
+
+    def find_repaint_tile(self,pos):
+        for tile in self.tiles_to_save:
+            if tile.cor == pos:
+                self.tiles_to_save.remove(tile)
+        for tile in self.tiles:
+            if tile.cor == pos:
+                 self.tiles.remove(tile)
 
     def control(self):
         for event in pg.event.get():
@@ -86,18 +121,42 @@ class MapCreator:
 
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    self.create_file()
+                    self.create_map_file()
                     exit()
+            if event.type == pg.MOUSEMOTION:
+                if self.select_tile:
+                    self.select_tile.move(event.pos)
+
+            if event.type == pg.MOUSEBUTTONDOWN and self.clean_space_click_check(event.pos):
+                x = (event.pos[0]//100) * tile_side
+                y = (event.pos[1]//100) * tile_side
+                self.find_repaint_tile([x,y])
+                if self.select_tile:
+                    tile_save = MapBuilderTile(self.select_tile.tile_file,list(event.pos),self.map_name)
+                    tile_show = GameTile(self.select_tile.tile_file)
+
+                    tile_save.cor[0],tile_show.cor[0] = x,x
+                    tile_save.cor[1],tile_show.cor[1] = y,y
+                    
+                    self.tiles_to_save.append(tile_save)
+                    self.tiles.append(tile_show)
 
     def create_cycle(self):
         while True:
             self.control()
             self.window.fill(WHITE)
+            for tile in self.tiles:
+                tile.draw(self.window)
             for menu in self.menus:
                 menu.draw()
+            if self.select_tile:
+                self.select_tile.draw(self.window)
             pg.display.update()
 
 if __name__ == "__main__":
-    t = MapCreator("test")
+    map_name = "test2"
+    t = MapCreator(map_name)
+    if os.path.exists(os.path.join("maps",map_name)):
+        t.load_map_file(map_name)
     menu = TileMenu(t.all_tile_names, t)
     t.create_cycle()

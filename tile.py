@@ -16,11 +16,31 @@ class TileInFile:
         with open(os.path.join("tiles",self.name+".tile"),mode="wb") as file:
             pickle.dump(self, file)
 
-class GameTile():
-    '''a tile that we draw in game'''
-    def __init__(self,tyile_file:str):
+class MapBuilderTile:
+    def __init__(self,tile_file:str,cor:list,map_name:str):
         
-        self.tyile_file = tyile_file
+        self.tile_file = tile_file
+        self.load()
+        self.name = self.loaded.name
+        self.maps = self.loaded.maps
+        self.surface_files = self.loaded.surface_files
+        self.cor = cor
+        self.map_name = map_name
+
+    def load(self):
+        with open(os.path.join("tiles",self.tile_file+".tile"),mode="rb") as file:
+            self.loaded = pickle.load(file)
+
+    def save(self):
+        with open(os.path.join("maps",self.map_name,self.name+".tile"),mode="wb") as file:
+            pickle.dump(self, file)
+    
+
+class GameTile:
+    '''a tile that we draw in game'''
+    def __init__(self,tile_file:str):
+        
+        self.tile_file = tile_file
         self.load()
         self.name = self.loaded.name
         self.maps = self.loaded.maps
@@ -41,16 +61,22 @@ class GameTile():
         return list(self.tile_pics.keys())
 
     def load(self):
-        with open(os.path.join("tiles",self.tyile_file+".tile"),mode="rb") as file:
+        with open(os.path.join("tiles",self.tile_file+".tile"),mode="rb") as file:
             self.loaded = pickle.load(file)
 
     def draw(self,screen):
         screen.blit(self.tile_pics["show"], self.cor)
 
 class MenuTile(GameTile):
-    def onclick(self):
-        print(self.get_pics_list())
+    def onclick(self,pos):
+        if self.rect.collidepoint(pos):
+            tmp = MovingTile(self.tile_file)
+            tmp.move(pos)
+            return tmp
 
+class MovingTile(GameTile):
+    def move(self,pos):
+        self.cor = pos
 
 def createAllTileFiles():
     TileInFile({"bookcase":os.path.join("samples","png","loc1.png")},name="bookcase")
@@ -67,7 +93,7 @@ if __name__ == "__main__":
     while True:
         test.draw(window)
         for event in pg.event.get():
-            if event.type == pg.EXIT:
+            if event.type == pg.QUIT:
                 exit()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
