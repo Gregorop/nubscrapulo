@@ -3,7 +3,7 @@ from map_manager import Map
 from tile import GameTile, TileInFile
 from constants import *
 
-class Game():
+class Game:
     def __init__(self,res=(1920,1080)):
         self.res = res
         self.window = pg.display.set_mode(res,flags=pg.FULLSCREEN)

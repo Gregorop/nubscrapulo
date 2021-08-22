@@ -1,6 +1,6 @@
 import pygame as pg
 
-class Map():
+class Map:
     def __init__(self,screen,tiles):
         self.screen = screen
         self.tiles = tiles

@@ -2,7 +2,7 @@ import pygame as pg
 import pickle
 import os
 
-class TileInFile():
+class TileInFile:
     '''a map file builds with this tiles'''
     def __init__(self,surface_files:dict,cor:list=[0,0],types:list=[],name:str="",maps=[]):
         self.cor = cor
@@ -17,7 +17,7 @@ class TileInFile():
             pickle.dump(self, file)
 
 class GameTile():
-    '''a tile that we draw on screen'''
+    '''a tile that we draw in game'''
     def __init__(self,tyile_file:str):
         
         self.tyile_file = tyile_file
