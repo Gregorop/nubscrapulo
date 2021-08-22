@@ -23,6 +23,7 @@ class GameTile():
         self.tyile_file = tyile_file
         self.load()
         self.name = self.loaded.name
+        self.maps = self.loaded.maps
         self.surface_files = self.loaded.surface_files
         self.tile_pics = dict()
         for surface_name in self.surface_files.keys():
@@ -46,6 +47,11 @@ class GameTile():
     def draw(self,screen):
         screen.blit(self.tile_pics["show"], self.cor)
 
+class MenuTile(GameTile):
+    def onclick(self):
+        print(self.get_pics_list())
+
+
 def createAllTileFiles():
     TileInFile({"bookcase":os.path.join("samples","png","loc1.png")},name="bookcase")
     TileInFile({"filler1":os.path.join("samples","png","loc2.png")},name="filler1")
@@ -61,6 +67,8 @@ if __name__ == "__main__":
     while True:
         test.draw(window)
         for event in pg.event.get():
+            if event.type == pg.EXIT:
+                exit()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     exit()
