@@ -108,10 +108,10 @@ class MapCreator:
 
     def find_repaint_tile(self,pos):
         for tile in self.tiles_to_save:
-            if tile.cor == pos:
+            if tile.cor[0]//tile_side == pos[0]//100 and tile.cor[1]//tile_side == pos[1]//100:
                 self.tiles_to_save.remove(tile)
         for tile in self.tiles:
-            if tile.cor == pos:
+            if tile.cor[0]//tile_side == pos[0]//100 and tile.cor[1]//tile_side == pos[1]//100:
                  self.tiles.remove(tile)
 
     def control(self):
@@ -123,14 +123,20 @@ class MapCreator:
                 if event.key == pg.K_ESCAPE:
                     self.create_map_file()
                     exit()
+
             if event.type == pg.MOUSEMOTION:
                 if self.select_tile:
                     self.select_tile.move(event.pos)
 
-            if event.type == pg.MOUSEBUTTONDOWN and self.clean_space_click_check(event.pos):
-                x = (event.pos[0]//100) * tile_side
-                y = (event.pos[1]//100) * tile_side
-                self.find_repaint_tile([x,y])
+            if event.type == pg.MOUSEBUTTONDOWN and event.button == 1 and self.clean_space_click_check(event.pos):
+                if "full" in self.select_tile.types:
+                    x = (event.pos[0]//100) * tile_side
+                    y = (event.pos[1]//100) * tile_side
+                else:
+                    x,y = event.pos
+                keys = pg.key.get_pressed()
+                if not keys[pg.K_SPACE]:
+                    self.find_repaint_tile([x,y])
                 if self.select_tile:
                     tile_save = MapBuilderTile(self.select_tile.tile_file,list(event.pos),self.map_name)
                     tile_show = GameTile(self.select_tile.tile_file)
@@ -154,7 +160,7 @@ class MapCreator:
             pg.display.update()
 
 if __name__ == "__main__":
-    map_name = "test2"
+    map_name = "test4"
     t = MapCreator(map_name)
     if os.path.exists(os.path.join("maps",map_name)):
         t.load_map_file(map_name)

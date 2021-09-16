@@ -79,10 +79,12 @@ class MovingTile(GameTile):
         self.cor = pos
 
 def createAllTileFiles():
-    TileInFile({"bookcase":os.path.join("samples","png","loc1.png")},name="bookcase")
-    TileInFile({"filler1":os.path.join("samples","png","loc2.png")},name="filler1")
-    TileInFile({"sofa":os.path.join("samples","png","loc3.png"),
-                "bookcase":os.path.join("samples","png","loc1.png")},name="sofa")
+    TileInFile({"bookcase":os.path.join("samples","png","bookcase.png")},
+                                name="bookcase",types=["fur"])
+    TileInFile({"window1":os.path.join("samples","png","window1.png")},
+                                name="window1",types=["full"])
+    TileInFile({"sofa":os.path.join("samples","png","sofa.png")},
+                                name="sofa",types=["fur"])
 
 if __name__ == "__main__":
     createAllTileFiles()
